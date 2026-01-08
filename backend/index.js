@@ -9,12 +9,25 @@ import { Pinecone } from "@pinecone-database/pinecone";
 import { pipeline } from "@xenova/transformers";
 import Groq from "groq-sdk";
 import { indexTheDocument } from "./ingest.js";
+import multer from "multer";
+import path from "path";
+import fs from "fs"
 
 const app = express();
 const PORT = process.env.PORT || 3002;
 
 app.use(cors());
 app.use(express.json());
+
+const uploadDir = "./uploads";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+const upload = multer({
+  dest: uploadDir,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
 
 // Groq (LLM only)
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -35,6 +48,31 @@ async function loadEmbedder() {
   }
   return embedder;
 }
+// ----------------------------
+// Upload File
+// ----------------------------
+app.post("/api/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const filePath = req.file.path;
+
+    console.log("📥 Uploaded file:", filePath);
+
+    const ids = await indexTheDocument(filePath);
+
+    res.json({
+      success: true,
+      message: "PDF indexed successfully",
+      chunks: ids.length,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ----------------------------
 // Ask Question

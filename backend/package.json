@@ -3,8 +3,6 @@
   "type": "module",
   "scripts": {
     "dev": "node index.js",
-    "ingest": "node ingest.js",
-    "rag": "node rag.js",
     "clearDatabase": "node clearDatabase.js"
   },
   "dependencies": {
@@ -23,6 +21,7 @@
     "express": "^4.22.1",
     "groq-sdk": "^0.5.0",
     "langchain": "^1.2.4",
+    "multer": "^2.0.2",
     "pdf-parse": "^1.1.1",
     "uuid": "^13.0.0"
   }
