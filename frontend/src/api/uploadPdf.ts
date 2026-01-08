@@ -7,7 +7,7 @@ export const uploadPdf = async (file: File) => {
   formData.append("file", file); // must match multer.single("file")
 
   const response = await axios.post(
-    `${API_BASE_URL}/ingest`,
+    `${API_BASE_URL}/upload`,
     formData,
     {
       headers: {
