@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { askRag } from "./api/askRag";
 import ReactMarkdown from "react-markdown";
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+  sources?: string[];
+};
 
 export default function RagChat() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<
-    { role: "user" | "assistant"; content: string }[]
-  >([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleAsk = async () => {
@@ -30,7 +33,11 @@ export default function RagChat() {
       // 3️⃣ Push assistant message
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: res.answer },
+        { 
+          role: "assistant",
+          content: res.answer,
+          sources: res.sources 
+        },
       ]);
     } catch (err) {
       setMessages((prev) => [
@@ -71,7 +78,23 @@ export default function RagChat() {
                   }`}
               >
                 {msg.role === "assistant" ? (
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <>
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                     {/* Sources */}
+                    {msg.sources && msg.sources.length > 0 && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        <span className="font-semibold">Source:</span>
+                        <ul className="list-disc ml-4">
+                          {msg.sources.map((src, i) => (
+                            <li key={i}>
+                              {src.split("/").pop()}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                  
                 ) : (
                   msg.content
                 )}

@@ -95,7 +95,13 @@ app.post("/api/ask", async (req, res) => {
     console.log("--------------------------------------------------");
     res.json({
       answer,
-      sources: queryResponse.matches.map(m => m.id),
+      sources: [
+      ...new Set(
+        queryResponse.matches.map(
+          (m) => m.metadata?.source
+        )
+      ),
+    ],
     });
 
   } catch (err) {
