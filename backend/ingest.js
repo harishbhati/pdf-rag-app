@@ -39,7 +39,7 @@ async function loadEmbedder() {
   return embedder;
 }
 
-export const indexTheDocument = async (filePath) => {
+export const indexTheDocument = async (filePath, originalFileName) => {
   // 1️⃣ Load PDF
   const loader = new PDFLoader(filePath, { splitPages: false });
   const docs = await loader.load();
@@ -77,7 +77,7 @@ export const indexTheDocument = async (filePath) => {
       values: Array.from(embedding.data),
       metadata: {
         text: chunk,
-        source: filePath,
+        source: originalFileName,
         chunk_index: i,
       },
     });

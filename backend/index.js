@@ -58,10 +58,12 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
     }
 
     const filePath = req.file.path;
+    const originalFileName = req.file.originalname;
 
     console.log("📥 Uploaded file:", filePath);
+    console.log("uploaded file name", originalFileName)
 
-    const ids = await indexTheDocument(filePath);
+    const ids = await indexTheDocument(filePath, originalFileName);
 
     res.json({
       success: true,
@@ -83,9 +85,6 @@ app.post("/api/ask", async (req, res) => {
 
   try {
     // 1️⃣ Create embedding locally (FREE)
-    // 🔹 LOG QUESTION
-    console.log("\n🟡 USER QUESTION:");
-    console.log(question);
 
     const embed = await loadEmbedder();
     const embedding = await embed(question, {
@@ -105,10 +104,6 @@ app.post("/api/ask", async (req, res) => {
       .map(m => m.metadata?.text)
       .join("\n");
 
-      // 🔹 LOG CONTEXT
-    console.log("\n🟢 RETRIEVED CONTEXT:");
-    console.log(context);
-
     // 3️⃣ Ask Groq LLM
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
@@ -127,10 +122,6 @@ app.post("/api/ask", async (req, res) => {
 
     const answer = completion.choices[0].message.content;
 
-    // 🔹 LOG ANSWER
-    console.log("\n🔵 LLM RESPONSE:");
-    console.log(answer);
-    console.log("--------------------------------------------------");
     res.json({
       answer,
       sources: [
