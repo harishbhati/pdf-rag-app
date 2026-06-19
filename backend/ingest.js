@@ -20,14 +20,15 @@ import { Pinecone } from "@pinecone-database/pinecone";
 import { randomUUID } from "crypto";
 import { pipeline } from "@xenova/transformers";
 
-// Pinecone
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY,
-});
-const index = pinecone.index(process.env.PINECONE_INDEX_NAME);
+let pineconeIndex;
+function getPineconeIndex() {
+  if (!pineconeIndex) {
+    const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
+    pineconeIndex = pinecone.index(process.env.PINECONE_INDEX_NAME);
+  }
+  return pineconeIndex;
+}
 
-// Load FREE local embedding model (same as server.js)
-// Singleton embedder
 let embedder;
 async function loadEmbedder() {
   if (!embedder) {
@@ -86,7 +87,7 @@ export const indexTheDocument = async (filePath, originalFileName) => {
   console.log("🗄️ Indexing into Pinecone...");
 
   // 4️⃣ Upsert vectors
-  await index.upsert( vectors );
+  await getPineconeIndex().upsert(vectors);
 
   console.log(`✅ ${vectors.length} chunks indexed successfully`);
 
